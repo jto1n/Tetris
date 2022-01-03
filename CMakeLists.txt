@@ -23,14 +23,15 @@ message(STATUS "SDL2 includes from ${SDL2_INCLUDE_DIRS}")
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 
+find_package(GLEW REQUIRED)
+include_directories(${GLEW_INCLUDE_DIRS})
+message(STATUS "GLEW includes from ${GLEW_INCLUDE_DIRS}") 
 
 # executable
 add_executable(${PROJECT_NAME} ${sources})
 target_compile_options(${PROJECT_NAME} PRIVATE -O3 -Wall -Wextra ) #-Werror 
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${OPENGL_LIBRARY})
+target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARIES} ${GLEW_LIBRARIES} ${OPENGL_LIBRARY}  )
 
 
-find_package(GLEW REQUIRED)
-include_directories(${GLEW_INCLUDE_DIRS})
-message(STATUS "GLEW includes from ${GLEW_INCLUDE_DIRS}")
+
 
