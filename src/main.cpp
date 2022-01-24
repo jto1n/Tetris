@@ -4,6 +4,7 @@
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include <iostream>
+#include <vector>
 
 /* A simple function that prints a message, the error code returned by SDL,
  * and quits the application */
@@ -29,27 +30,29 @@ void checkSDLError(int line = -1)
 #endif
 }
  
- float vert[] = 
-    {
-        -0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-    };
+float vert[] = 
+{
+       -0.5f, -0.5f, 0.0f,
+        0.0f,  0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+};
 
 const char* vsSource = 
-"in vec3 position;"
-"void main("
+"#version 330 core"
+"layout(location = 0) in vec3 position;"
+"void main()"
 "{"
-"gl_Position = vec4(poisition.x, poisition.y, poisition.z, 1.0)"
+"gl_Position = vec4(position.x, position.y, position.z, 1.0);"
 "}";
 
 const char* fsSource = 
-"out vec4 color;"
-"void main()"
-"{"
-"color = vec4(1.0f, 0.0f, 0.0f, 1.0f);"
-"}";
-
+"#version 330 core\n"
+"out vec4 color;\n"
+"void main()\n"
+"{\n"
+"color = vec4(1.0, 1.0, 1.0, 1.0);\n"
+"}\n";
+GLint result = GL_FALSE;
 /* Our program's entry point */
 int main()
 {
@@ -96,10 +99,18 @@ if (err != GLEW_OK)
     glShaderSource(fs, 1, &fsSource, NULL);
     glCompileShader(fs);
 
+
+    // glGetShaderiv(fs, GL_COMPILE_STATUS, &result);
+    // glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &logLength);
+    // std::vector fragShaderError((logLength > 1) ? logLength : 1);
+    // glGetShaderInfoLog(fs, logLength, NULL, &fragShaderError[0]);
+    // std::cout << &fragShaderError[0] << std::endl;
+
     shader = glCreateProgram();
     glAttachShader(shader, vs);
     glAttachShader(shader, fs);
     glLinkProgram(shader);
+    glValidateProgram(shader);
 
     glDeleteShader(vs);
     glDeleteShader(fs);
@@ -119,6 +130,9 @@ if (err != GLEW_OK)
     SDL_Event event;
     bool running = true;
 
+
+    
+
     while(running)
     {
         while(SDL_PollEvent(&event))
@@ -136,17 +150,18 @@ if (err != GLEW_OK)
         }
 
         /* Clear our buffer with a red background */
-    glClearColor ( 1.0, 0.0, 0.0, 1.0 );
+    //glClearColor ( 1.0, 0.0, 0.0, 1.0 );
 
-    glClear ( GL_COLOR_BUFFER_BIT );
+        glClear ( GL_COLOR_BUFFER_BIT );
 
-    glUseProgram(shader);
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+        
+        glBindVertexArray(VAO);
+        glUseProgram(shader);
+        glDrawArrays(GL_TRIANGLES, 0, 3);
 
 
-    // /* Swap our back buffer to the front */
-    SDL_GL_SwapWindow(window);
+        // /* Swap our back buffer to the front */
+        SDL_GL_SwapWindow(window);
     }
     SDL_GL_DeleteContext(context);
     SDL_DestroyWindow(window);
