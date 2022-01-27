@@ -39,7 +39,8 @@ float vert[] =
         0.0f,  0.5f, 0.0f,
         0.5f, -0.5f, 0.0f,
 };
-const char* getShader(const char* filePath )
+const 
+std::string getShader(const char* filePath )
 {
     std::fstream stream;
     std::stringstream ss;
@@ -51,33 +52,23 @@ const char* getShader(const char* filePath )
         ss << line << '\n';
         
     }
-    //std::cout<<ss.str() << '\n';
-    const char* converted = ss.str().c_str();
-    return converted;
+    std::cout<<ss.str() << '\n';
+    ss.str();
+   
+    //stream.close();
+    return ss.str();;
 }
 
-const char* vsSource = getShader("../shaders/vert.shader");
-// "#version 330 core\n"
-// "layout (location = 0) in vec3 position;\n"
-// "void main()\n"
-// "{\n"
-// "   gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
-// "}\n"
-// "\0";
-
-const char* fsSource = 
-"#version 330 core\n"
-"out vec4 color;\n"
-"void main()\n"
-"{\n"
-"color = vec4(1.0, 1.0, 0.0, 1.0);\n"
-"}\n"
-"\0";
 GLint result = GL_FALSE;
 /* Our program's entry point */
 int main()
 {
-    std::cout << vsSource << "\n";
+    //read shaders
+    std::string  vsSource = getShader("../shaders/vert.shader");
+    const char * vsShader = vsSource.c_str();
+
+    std::string fsSource = getShader("../shaders/frag.shader");
+    const char * fsShader = fsSource.c_str();
 
 
     SDL_Window *window; /* Our window handle */
@@ -90,8 +81,8 @@ int main()
     /* Request opengl 4.6 context.
      * SDL doesn't have the ability to choose which profile at this time of writing,
      * but it should default to the core profile */
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 
     window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 500, 400, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     
@@ -114,12 +105,14 @@ if (err != GLEW_OK)
     unsigned int shader;
 
     vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &vsSource, NULL);
+    
+    glShaderSource(vs, 1, &vsShader, NULL);
+    
     glCompileShader(vs);
      
 
     fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &fsSource, NULL);
+    glShaderSource(fs, 1, &fsShader, NULL);
     glCompileShader(fs);
 
     shader = glCreateProgram();
@@ -151,11 +144,11 @@ if (err != GLEW_OK)
 
     glBindVertexArray(VAO);
 
-    
+       std::cout<<"error: " << glGetError()<< "\n";
 
     glUseProgram(shader);
      
-    std::cout<<"error: " << glGetError()<< "\n";
+ 
     
     while(running)
     {
