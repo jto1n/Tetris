@@ -39,19 +39,21 @@ float vert[] =
         0.0f,  0.5f, 0.0f,
         0.5f, -0.5f, 0.0f,
 };
-const char* getShader(const std::string& filePath )
+const char* getShader(const char* filePath )
 {
-    std::fstream stream(filePath);
+    std::fstream stream;
     std::stringstream ss;
     std::string line;
+
+    stream.open(filePath);
     while(getline(stream, line ))
     {
         ss << line << '\n';
         
     }
-    std::cout<< ss.str() << '\n';
-    std::string converted = ss.str();
-    return converted.c_str();
+    //std::cout<<ss.str() << '\n';
+    const char* converted = ss.str().c_str();
+    return converted;
 }
 
 const char* vsSource = getShader("../shaders/vert.shader");
@@ -59,7 +61,7 @@ const char* vsSource = getShader("../shaders/vert.shader");
 // "layout (location = 0) in vec3 position;\n"
 // "void main()\n"
 // "{\n"
-// "gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
+// "   gl_Position = vec4(position.x, position.y, position.z, 1.0);\n"
 // "}\n"
 // "\0";
 
@@ -75,13 +77,12 @@ GLint result = GL_FALSE;
 /* Our program's entry point */
 int main()
 {
-    std::cout << &vsSource << "\n";
+    std::cout << vsSource << "\n";
 
 
     SDL_Window *window; /* Our window handle */
     SDL_GLContext context; /* Our opengl context handle */
 
-    std::cout<<"helptext" << "\n";
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) /* Initialize SDL's Video subsystem */
         sdldie("Unable to initialize SDL"); /* Or die on error */
@@ -94,7 +95,7 @@ int main()
 
     window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 500, 400, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     
-
+    
     context = SDL_GL_CreateContext(window);
 
 
@@ -115,7 +116,7 @@ if (err != GLEW_OK)
     vs = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vs, 1, &vsSource, NULL);
     glCompileShader(vs);
-
+     
 
     fs = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fs, 1, &fsSource, NULL);
@@ -126,6 +127,8 @@ if (err != GLEW_OK)
     glAttachShader(shader, fs);
     glLinkProgram(shader);
     glValidateProgram(shader);
+
+   
 
     glDeleteShader(vs);
     glDeleteShader(fs);
@@ -148,9 +151,12 @@ if (err != GLEW_OK)
 
     glBindVertexArray(VAO);
 
+    
+
     glUseProgram(shader);
      
-
+    std::cout<<"error: " << glGetError()<< "\n";
+    
     while(running)
     {
         
