@@ -8,6 +8,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include "shader.h"
 
 /* A simple function that prints a message, the error code returned by SDL,
  * and quits the application */
@@ -35,40 +36,23 @@ void checkSDLError(int line = -1)
  
 float vert[] = 
 {
-       -0.5f, -0.5f, 0.0f,
-        0.0f,  0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
+    -0.5f, -0.5f, 0.0f,
+    -0.5f,  0.5f, 0.0f,
+     0.5f,  0.5f, 0.0f,
+     0.5f, -0.5f, 0.0f,
 };
-const 
-std::string getShader(const char* filePath )
-{
-    std::fstream stream;
-    std::stringstream ss;
-    std::string line;
 
-    stream.open(filePath);
-    while(getline(stream, line ))
-    {
-        ss << line << '\n';
-        
-    }
-    std::cout<<ss.str() << '\n';
-    ss.str();
-   
-    //stream.close();
-    return ss.str();;
-}
+unsigned int indices[] = {
+    0, 1, 2,
+    2, 3, 0
+};
+
 
 GLint result = GL_FALSE;
 /* Our program's entry point */
 int main()
 {
-    //read shaders
-    std::string  vsSource = getShader("../shaders/vert.shader");
-    const char * vsShader = vsSource.c_str();
 
-    std::string fsSource = getShader("../shaders/frag.shader");
-    const char * fsShader = fsSource.c_str();
 
 
     SDL_Window *window; /* Our window handle */
@@ -83,6 +67,7 @@ int main()
      * but it should default to the core profile */
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     window = SDL_CreateWindow("Tetris", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 500, 400, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
     
@@ -99,41 +84,35 @@ if (err != GLEW_OK)
     SDL_Quit();
     return 1;
 }
-   
-    unsigned int vs;
-    unsigned int fs;
-    unsigned int shader;
 
-    vs = glCreateShader(GL_VERTEX_SHADER);
+
+    //grabbing and compiling shaders.
+    Shader shaderRaw("../shaders/vert.shader", "../shaders/frag.shader");
+    unsigned int shader = shaderRaw.compile();
+    shaderRaw.remove();
+
+
+
+
+    //creating vertex array object
+    unsigned int vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
     
-    glShaderSource(vs, 1, &vsShader, NULL);
-    
-    glCompileShader(vs);
-     
 
-    fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &fsShader, NULL);
-    glCompileShader(fs);
-
-    shader = glCreateProgram();
-    glAttachShader(shader, vs);
-    glAttachShader(shader, fs);
-    glLinkProgram(shader);
-    glValidateProgram(shader);
-
-   
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-    
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    //creating vertex buffer object
+    unsigned int vbo;
+    glGenBuffers(1, &vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vert), vert, GL_STATIC_DRAW);
+
+
+
+    //creating index buffer
+    unsigned int ibo;
+    glGenBuffers(1, &ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -142,14 +121,14 @@ if (err != GLEW_OK)
     SDL_Event event;
     bool running = true;
 
-    glBindVertexArray(VAO);
+    glBindVertexArray(vao);
 
        std::cout<<"error: " << glGetError()<< "\n";
 
     glUseProgram(shader);
      
  
-    
+    //main while loop for program.
     while(running)
     {
         
@@ -167,15 +146,15 @@ if (err != GLEW_OK)
 
         }
     
-        /* Clear our buffer with a red background */
-    //glClearColor ( 1.0, 0.0, 0.0, 1.0 );
+        /* Clear our buffer with a blue background*/
+        glClearColor ( 0.0, 0.5, 1.0, 1.0 );
 
         glClear ( GL_COLOR_BUFFER_BIT );
 
         
         
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-        
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+
 
 
         // /* Swap our back buffer to the front */
